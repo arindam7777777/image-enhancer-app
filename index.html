@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>AI Image Enhancer Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .critical-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading overlay that disappears when page loads -->
+    <div id="initialLoader" class="critical-loading">
+        <div style="text-align: center;">
+            <i class="fas fa-spinner fa-spin fa-3x"></i>
+            <h2 style="margin-top: 20px;">Loading Image Enhancer...</h2>
+        </div>
+    </div>
+
+    <div class="container" style="display: none;">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-magic"></i>
+                <h1>AI Image Enhancer</h1>
+            </div>
+            <p class="tagline">Upload any image and enhance it instantly with 2X/4X/8X super resolution</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <div class="upload-area" id="dropArea">
+                    <div class="upload-content">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <h3>Drag & Drop Image Here</h3>
+                        <p>Supports JPG, PNG, WEBP, GIF (Max 10MB)</p>
+                        <div class="upload-buttons">
+                            <!-- Hidden file input with proper ID -->
+                            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                            <button class="btn btn-primary" id="uploadBtn">
+                                <i class="fas fa-folder-open"></i> Select Image
+                            </button>
+                            <button class="btn btn-secondary" id="cameraBtn" style="display: none;">
+                                <i class="fas fa-camera"></i> Use Camera
+                            </button>
+                        </div>
+                        <div class="file-info" id="fileInfo"></div>
+                    </div>
+                </div>
+
+                <!-- Image Preview -->
+                <div class="preview-container">
+                    <div class="image-box">
+                        <div class="image-header">
+                            <h3><i class="fas fa-image"></i> Original</h3>
+                            <div class="image-actions">
+                                <button class="btn-small" id="zoomInOriginal" title="Zoom In">+</button>
+                                <button class="btn-small" id="zoomOutOriginal" title="Zoom Out">-</button>
+                                <button class="btn-small" id="resetZoomOriginal" title="Reset Zoom">↺</button>
+                            </div>
+                        </div>
+                        <div class="image-placeholder" id="originalPreview">
+                            <div class="placeholder-content">
+                                <i class="fas fa-image"></i>
+                                <p>No image selected</p>
+                            </div>
+                            <img id="originalImage" alt="Original Image">
+                        </div>
+                        <div class="image-stats" id="originalStats"></div>
+                    </div>
+                    
+                    <div class="image-box">
+                        <div class="image-header">
+                            <h3><i class="fas fa-star"></i> Enhanced</h3>
+                            <div class="image-actions">
+                                <button class="btn-small" id="zoomInEnhanced" title="Zoom In">+</button>
+                                <button class="btn-small" id="zoomOutEnhanced" title="Zoom Out">-</button>
+                                <button class="btn-small" id="resetZoomEnhanced" title="Reset Zoom">↺</button>
+                            </div>
+                        </div>
+                        <div class="image-placeholder" id="enhancedPreview">
+                            <div class="placeholder-content">
+                                <i class="fas fa-wand-magic-sparkles"></i>
+                                <p>Enhanced image will appear here</p>
+                            </div>
+                            <img id="enhancedImage" alt="Enhanced Image">
+                        </div>
+                        <div class="image-stats" id="enhancedStats"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Section - UPDATED FOR MOBILE -->
+            <div class="controls-section">
+                <h2><i class="fas fa-sliders-h"></i> Enhancement Controls</h2>
+                
+                <!-- Changed from mobile-slider-container to controls-container -->
+                <div class="controls-container" id="controlsContainer">
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <div class="control-label">
+                                <i class="fas fa-crosshairs"></i>
+                                <span>Sharpness</span>
+                                <span class="control-value" id="sharpnessValue">2.0x</span>
+                            </div>
+                            <input type="range" id="sharpnessSlider" min="0.5" max="3.0" step="0.1" value="2.0" class="slider">
+                            <div class="control-help">Enhance image details and edges</div>
+                        </div>
+                        
+                        <div class="control-group">
+                            <div class="control-label">
+                                <i class="fas fa-adjust"></i>
+                                <span>Contrast</span>
+                                <span class="control-value" id="contrastValue">1.2x</span>
+                            </div>
+                            <input type="range" id="contrastSlider" min="0.5" max="2.0" step="0.1" value="1.2" class="slider">
+                            <div class="control-help">Adjust difference between light and dark areas</div>
+                        </div>
+                        
+                        <div class="control-group">
+                            <div class="control-label">
+                                <i class="fas fa-sun"></i>
+                                <span>Brightness</span>
+                                <span class="control-value" id="brightnessValue">1.1x</span>
+                            </div>
+                            <input type="range" id="brightnessSlider" min="0.5" max="2.0" step="0.1" value="1.1" class="slider">
+                            <div class="control-help">Adjust overall image lightness</div>
+                        </div>
+                        
+                        <div class="control-group">
+                            <div class="control-label">
+                                <i class="fas fa-palette"></i>
+                                <span>Color</span>
+                                <span class="control-value" id="colorValue">1.1x</span>
+                            </div>
+                            <input type="range" id="colorSlider" min="0.5" max="2.0" step="0.1" value="1.1" class="slider">
+                            <div class="control-help">Adjust color saturation and vibrance</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Options -->
+                <div class="advanced-section">
+                    <h3><i class="fas fa-cogs"></i> Advanced Options</h3>
+                    
+                    <div class="advanced-grid">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="denoiseCheckbox" class="checkbox">
+                            <label for="denoiseCheckbox" class="checkbox-label">
+                                <i class="fas fa-filter"></i>
+                                <span>Remove Noise</span>
+                                <span class="option-description">Reduce grain and noise from image</span>
+                            </label>
+                        </div>
+                        
+                        <div class="select-group">
+                            <label for="superResSelect" class="select-label">
+                                <i class="fas fa-search-plus"></i>
+                                <span>Super Resolution</span>
+                            </label>
+                            <select id="superResSelect" class="select">
+                                <option value="1">No Upscale (Original Size)</option>
+                                <option value="2">2x Upscale (Better Quality)</option>
+                                <option value="4">4x Upscale (High Quality)</option>
+                                <option value="8">8x Upscale (Maximum Quality)</option>
+                            </select>
+                            <div class="select-help">Higher upscaling takes more time</div>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="autoEnhanceCheckbox" class="checkbox" checked>
+                            <label for="autoEnhanceCheckbox" class="checkbox-label">
+                                <i class="fas fa-robot"></i>
+                                <span>Auto Enhance</span>
+                                <span class="option-description">Apply smart automatic enhancements</span>
+                            </label>
+                        </div>
+                        
+                        <div class="select-group">
+                            <label for="formatSelect" class="select-label">
+                                <i class="fas fa-file-image"></i>
+                                <span>Output Format</span>
+                            </label>
+                            <select id="formatSelect" class="select">
+                                <option value="png">PNG (Lossless)</option>
+                                <option value="jpg">JPG (High Quality)</option>
+                                <option value="webp">WebP (Modern)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-section">
+                    <div class="action-buttons">
+                        <button class="btn btn-enhance" id="enhanceBtn" disabled>
+                            <i class="fas fa-magic"></i> 
+                            <span>Enhance Image</span>
+                        </button>
+                        
+                        <div class="secondary-buttons">
+                            <button class="btn btn-download" id="downloadBtn" disabled>
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <button class="btn btn-reset" id="resetBtn">
+                                <i class="fas fa-redo"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="progress-container" id="progressContainer" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">Processing...</div>
+                    </div>
+                </div>
+
+                <!-- Status Messages -->
+                <div class="status-container">
+                    <div class="status" id="statusText"></div>
+                    <div class="backend-status" id="backendStatus">
+                        <i class="fas fa-spinner fa-spin"></i> Connecting to backend...
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tips Section -->
+            <div class="tips-section">
+                <h3><i class="fas fa-lightbulb"></i> Pro Tips</h3>
+                <div class="tips-grid">
+                    <div class="tip">
+                        <i class="fas fa-bolt"></i>
+                        <p>Use <strong>2x</strong> super resolution for social media posts</p>
+                    </div>
+                    <div class="tip">
+                        <i class="fas fa-print"></i>
+                        <p>Use <strong>4x-8x</strong> for printing or large displays</p>
+                    </div>
+                    <div class="tip">
+                        <i class="fas fa-moon"></i>
+                        <p>Enable <strong>Remove Noise</strong> for low-light photos</p>
+                    </div>
+                    <div class="tip">
+                        <i class="fas fa-history"></i>
+                        <p>8x upscaling may take longer for large images</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <p>© <span id="currentYear"></span> Image Enhancer Pro | FastAPI + Pillow</p>
+                    <p class="footer-note">Traditional image processing algorithms - No AI required</p>
+                </div>
+                <div class="footer-right">
+                    <div class="footer-stats">
+                        <span id="processedCount">0</span> images enhanced
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal" id="loadingModal">
+        <div class="modal-content">
+            <div class="loader">
+                <div class="loader-spinner"></div>
+                <div class="loader-ring"></div>
+            </div>
+            <h3 id="loadingTitle">Enhancing Your Image</h3>
+            <p id="loadingMessage">Preparing image for enhancement...</p>
+            <div class="loading-details">
+                <div class="loading-detail">
+                    <i class="fas fa-image"></i>
+                    <span id="loadingImageInfo">Loading image info...</span>
+                </div>
+                <div class="loading-detail">
+                    <i class="fas fa-expand-alt"></i>
+                    <span id="loadingScaleInfo">Calculating scale...</span>
+                </div>
+            </div>
+            <button class="btn btn-cancel" id="cancelBtn">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal" id="errorModal">
+        <div class="modal-content error-modal">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 id="errorTitle">Something went wrong</h3>
+            <p id="errorMessage">Unable to process your request. Please try again.</p>
+            <div class="error-actions">
+                <button class="btn btn-primary" id="retryBtn">
+                    <i class="fas fa-redo"></i> Try Again
+                </button>
+                <button class="btn btn-secondary" id="closeErrorBtn">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Hide initial loader when page loads
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('initialLoader').style.display = 'none';
+                document.querySelector('.container').style.display = 'block';
+                console.log('✅ Page fully loaded');
+                
+                // Initialize zoom buttons
+                initZoomButtons();
+            }, 500);
+        });
+        
+        // Fallback in case load event doesn't fire
+        setTimeout(function() {
+            document.getElementById('initialLoader').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+            console.log('✅ Page loaded (fallback)');
+            
+            // Initialize zoom buttons
+            initZoomButtons();
+        }, 2000);
+        
+        // Initialize zoom functionality
+        function initZoomButtons() {
+            console.log('Initializing zoom buttons...');
+            
+            // Original image zoom
+            document.getElementById('zoomInOriginal')?.addEventListener('click', function() {
+                zoomImage('originalImage', 1.2);
+            });
+            
+            document.getElementById('zoomOutOriginal')?.addEventListener('click', function() {
+                zoomImage('originalImage', 0.8);
+            });
+            
+            document.getElementById('resetZoomOriginal')?.addEventListener('click', function() {
+                resetZoom('originalImage');
+            });
+            
+            // Enhanced image zoom
+            document.getElementById('zoomInEnhanced')?.addEventListener('click', function() {
+                zoomImage('enhancedImage', 1.2);
+            });
+            
+            document.getElementById('zoomOutEnhanced')?.addEventListener('click', function() {
+                zoomImage('enhancedImage', 0.8);
+            });
+            
+            document.getElementById('resetZoomEnhanced')?.addEventListener('click', function() {
+                resetZoom('enhancedImage');
+            });
+            
+            console.log('Zoom buttons initialized');
+        }
+        
+        function zoomImage(imageId, factor) {
+            const img = document.getElementById(imageId);
+            if (img && img.style.display !== 'none') {
+                const currentScale = parseFloat(img.style.transform.replace('scale(', '').replace(')', '')) || 1;
+                const newScale = currentScale * factor;
+                img.style.transform = `scale(${newScale})`;
+                img.style.transformOrigin = 'center center';
+                console.log(`Zoomed ${imageId} to scale ${newScale}`);
+            }
+        }
+        
+        function resetZoom(imageId) {
+            const img = document.getElementById(imageId);
+            if (img) {
+                img.style.transform = 'scale(1)';
+                console.log(`Reset zoom for ${imageId}`);
+            }
+        }
+        
+        // Initialize processed count
+        let processedCount = localStorage.getItem('processedCount') || 0;
+        document.getElementById('processedCount').textContent = processedCount;
+        
+        // Increment count when enhancement is successful
+        window.incrementProcessedCount = function() {
+            processedCount = parseInt(processedCount) + 1;
+            localStorage.setItem('processedCount', processedCount);
+            document.getElementById('processedCount').textContent = processedCount;
+        };
+        
+        // Mobile-specific fix: Controls will stack vertically automatically via CSS
+        window.addEventListener('DOMContentLoaded', function() {
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile) {
+                console.log('📱 Mobile device detected - controls will stack vertically');
+            }
+        });
+    </script>
+</body>
+</html>
